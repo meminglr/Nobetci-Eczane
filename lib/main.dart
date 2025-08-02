@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:myapp/home_page.dart';
 import 'package:myapp/services/selected_list_item.dart';
+import 'package:myapp/tutoriol_page.dart';
 
-void main() async{
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Hive.initFlutter(); 
-   Hive.registerAdapter(SelectedListItemAdapter());
+  await Hive.initFlutter();
+  Hive.registerAdapter(SelectedListItemAdapter());
   await Hive.openBox('appData');
 
   runApp(MyApp());
@@ -31,7 +32,7 @@ class MyApp extends StatelessWidget {
           ),
         ),
       ),
-      home: HomePage(),
+      home: TutoriolPage(),
     );
   }
 }

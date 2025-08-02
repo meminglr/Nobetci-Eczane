@@ -60,8 +60,8 @@ class Data {
   String? directions;
   String? phone;
   var phone2;
-  String? pharmacyDutyStart;
-  String? pharmacyDutyEnd;
+  var pharmacyDutyStart;
+  var pharmacyDutyEnd;
   double? latitude;
   double? longitude;
 

@@ -3,8 +3,11 @@ import 'package:drop_down_list/model/selected_list_item.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:myapp/home_controller.dart';
+import 'package:myapp/model/eczane_model.dart';
 import 'package:myapp/model/sehir_model.dart';
 import 'package:myapp/services/eczane_service.dart';
+import 'package:myapp/widgets/example_list.dart';
 import 'package:myapp/widgets/widgets.dart';
 import 'package:drop_down_list/drop_down_list.dart';
 
@@ -16,99 +19,17 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  final box = Hive.box('appData');
-  List<dynamic> illerListesi = [];
-  String? secilenSehir;
-  String? secilenIlce;
-  List<SelectedListItem<dynamic>> yeniIllerListesi = [];
-  List<SelectedListItem<dynamic>> yeniIcelerListesi = [];
-
-  Future<void> illeriGetir() async {
-    String jsonString = await rootBundle.loadString('json/il-ilce.json');
-
-    final jsonResponse = json.decode(jsonString);
-
-    illerListesi = jsonResponse.map((x) => Iller.fromJson(x)).toList();
-  }
-
-  void modelToString() {
-    yeniIllerListesi = [];
-
-    illerListesi.forEach((element) {
-      yeniIllerListesi.add(SelectedListItem(data: element.ilAdi));
-    });
-    setState(() {});
-  }
-
-  void secilenIlinIlceleriniGetir(String secilenSehir) {
-    yeniIcelerListesi = [];
-    illerListesi.forEach((element) {
-      if (element.ilAdi == secilenSehir) {
-        element.ilceler.forEach((element) {
-          yeniIcelerListesi.add(SelectedListItem(data: element.ilceAdi));
-        });
-      }
-    });
-  }
-
-  String normalizeToEnglish(String input) {
-    const Map<String, String> charMap = {
-      'ç': 'c',
-      'Ç': 'c',
-      'ğ': 'g',
-      'Ğ': 'g',
-      'ı': 'i',
-      'İ': 'i',
-      'ö': 'o',
-      'Ö': 'o',
-      'ş': 's',
-      'Ş': 's',
-      'ü': 'u',
-      'Ü': 'u',
-    };
-
-    // Her karakteri dönüştür
-    String normalized = input
-        .split('')
-        .map((char) {
-          return charMap[char] ?? char;
-        })
-        .join('');
-
-    return normalized.toLowerCase();
-  }
-
-  void _loadData() {
-    illerListesi = box.get('illerListesi', defaultValue: []).cast<String>();
-    secilenSehir = box.get('secilenSehir');
-    secilenIlce = box.get('secilenIlce');
-    yeniIllerListesi =
-        (box.get('yeniIllerListesi', defaultValue: []) as List)
-            .cast<SelectedListItem>();
-    yeniIcelerListesi =
-        (box.get('yeniIcelerListesi', defaultValue: []) as List)
-            .cast<SelectedListItem>();
-    setState(() {});
-  }
-
-  void _saveData() {
-    box.put('illerListesi', illerListesi);
-    box.put('secilenSehir', secilenSehir);
-    box.put('secilenIlce', secilenIlce);
-    box.put('yeniIllerListesi', yeniIllerListesi);
-    box.put('yeniIcelerListesi', yeniIcelerListesi);
-  }
-
   @override
   void initState() {
     super.initState();
-    _loadData();
-    illeriGetir().then((onValue) => modelToString());
+    controller.loadData();
+    controller.illeriGetir().then((onValue) => controller.modelToString());
   }
 
   @override
   Widget build(BuildContext context) {
     EczaneService eczaneService = EczaneService();
+    List<Data> datalist = DataList().dataList;
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -136,14 +57,15 @@ class _HomePageState extends State<HomePage> {
               children: [ilSelectButton(context), ilceSelectButton(context)],
             ),
 
-            secilenIlce != null
+            controller.secilenIlce != null
                 ? Expanded(
                   child: Widgets().Future(
                     eczaneService,
-                    normalizeToEnglish(secilenSehir!),
-                    normalizeToEnglish(secilenIlce!),
+                    controller.normalizeToEnglish(controller.secilenSehir!),
+                    controller.normalizeToEnglish(controller.secilenIlce!),
                   ),
-                )
+                ) /*EczaneItem(data: datalist, eczaneService: eczaneService),
+                )*/
                 : Text("Konum Bilgisi Girin"),
             //EczaneItem(),
           ],
@@ -158,16 +80,20 @@ class _HomePageState extends State<HomePage> {
         DropDownState(
           dropDown: DropDown(
             searchHintText: "İlçe Ara",
-            data: yeniIcelerListesi,
+            data: controller.yeniIcelerListesi,
             onSelected: (ilceSelectedItem) {
-              secilenIlce = ilceSelectedItem[0].data;
-              _saveData();
+              controller.secilenIlce = ilceSelectedItem[0].data;
+              controller.saveData();
               setState(() {});
             },
           ),
         ).showModal(context);
       },
-      child: Text(secilenIlce == null ? "İlçe Seçiniz" : secilenIlce!),
+      child: Text(
+        controller.secilenIlce == null
+            ? "İlçe Seçiniz"
+            : controller.secilenIlce!,
+      ),
     );
   }
 
@@ -177,107 +103,142 @@ class _HomePageState extends State<HomePage> {
         DropDownState(
           dropDown: DropDown(
             searchHintText: "Şehir Ara",
-            data: yeniIllerListesi,
+            data: controller.yeniIllerListesi,
             onSelected: (ilSelectedItem) {
-              secilenSehir = ilSelectedItem[0].data;
-              secilenIlce = null;
-              secilenIlinIlceleriniGetir(secilenSehir!);
-              _saveData();
+              controller.secilenSehir = ilSelectedItem[0].data;
+              controller.secilenIlce = null;
+              controller.secilenIlinIlceleriniGetir(controller.secilenSehir!);
+              controller.saveData();
               setState(() {});
             },
           ),
         ).showModal(context);
       },
-      child: Text(secilenSehir == null ? "Şehir Seçiniz" : secilenSehir!),
+      child: Text(
+        controller.secilenSehir == null
+            ? "Şehir Seçiniz"
+            : controller.secilenSehir!,
+      ),
     );
   }
 }
 
 class EczaneItem extends StatelessWidget {
-  const EczaneItem({super.key});
+  final List<Data> data;
+
+  final EczaneService eczaneService;
+
+  const EczaneItem({
+    super.key,
+    required this.data,
+    required this.eczaneService,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: SizedBox(
-        height: 100,
-        child: Row(
-          children: [
-            Expanded(
-              flex: 1,
-              child: InkWell(
-                borderRadius: BorderRadius.horizontal(
-                  left: Radius.circular(20),
-                ),
-                onTap: () {},
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.blue,
+    return ListView.builder(
+      itemCount: data.length,
+      itemBuilder: (context, index) {
+        var item = data[index];
+        return Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: SizedBox(
+            height: 100,
+            child: Row(
+              children: [
+                Expanded(
+                  flex: 1,
+                  child: InkWell(
                     borderRadius: BorderRadius.horizontal(
                       left: Radius.circular(20),
                     ),
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.map_outlined, color: Colors.blue[100]),
-                      Text(
-                        "Yol Tarifi Al",
-                        style: TextStyle(color: Colors.blue[100]),
+                    onTap: () {
+                      eczaneService.openMap(item.latitude!, item.longitude!);
+                    },
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.blue,
+                        borderRadius: BorderRadius.horizontal(
+                          left: Radius.circular(20),
+                          right: Radius.circular(5),
+                        ),
                       ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            Expanded(
-              flex: 3,
-              child: Container(
-                color: Colors.grey[100],
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text("Yaprak Eczanesi", style: TextStyle(fontSize: 20)),
-                      Text(
-                        "Yeşilyurt Mahallesi, Muş-Bitlis Soşesi Caddesi, Aksoy Yapı Altı No:81/4 Merkez / Muş",
-                        style: TextStyle(fontSize: 12),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.map_outlined, color: Colors.blue[100]),
+                          Text(
+                            "Harita",
+                            style: TextStyle(color: Colors.blue[100]),
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
                 ),
-              ),
-            ),
-            Expanded(
-              flex: 1,
-              child: InkWell(
-                borderRadius: BorderRadius.horizontal(
-                  right: Radius.circular(20),
+                Expanded(
+                  flex: 3,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.grey[100],
+                      borderRadius: BorderRadius.all(Radius.circular(5)),
+                    ),
+
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            item.pharmacyName!,
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(item.address!, style: TextStyle(fontSize: 10)),
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
-                onTap: () {},
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.green,
+                Expanded(
+                  flex: 1,
+                  child: InkWell(
                     borderRadius: BorderRadius.horizontal(
                       right: Radius.circular(20),
                     ),
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.call, color: Colors.green[100]),
-                      Text("Ara", style: TextStyle(color: Colors.green[100])),
-                    ],
+                    onTap: () {
+                      eczaneService.makePhoneCall(item.phone!);
+                    },
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.green,
+                        borderRadius: BorderRadius.horizontal(
+                          right: Radius.circular(20),
+
+                          left: Radius.circular(5),
+                        ),
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.call_outlined, color: Colors.green[100]),
+                          Text(
+                            "Ara",
+                            style: TextStyle(color: Colors.green[100]),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
-              ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }

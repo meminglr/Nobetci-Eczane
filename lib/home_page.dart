@@ -1,15 +1,12 @@
-import 'dart:convert';
-import 'package:drop_down_list/model/selected_list_item.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:myapp/home_controller.dart';
 import 'package:myapp/model/eczane_model.dart';
-import 'package:myapp/model/sehir_model.dart';
+import 'package:myapp/screens/first_screen.dart';
+import 'package:myapp/screens/main_screen.dart';
 import 'package:myapp/services/eczane_service.dart';
 import 'package:myapp/widgets/example_list.dart';
-import 'package:myapp/widgets/widgets.dart';
-import 'package:drop_down_list/drop_down_list.dart';
+import 'package:myapp/widgets/companents.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -19,6 +16,8 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  HomeController controller = HomeController();
+
   @override
   void initState() {
     super.initState();
@@ -28,97 +27,25 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final box = controller.box;
     EczaneService eczaneService = EczaneService();
-    List<Data> datalist = DataList().dataList;
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        scrolledUnderElevation: 0,
+    Companents companents = Companents();
 
-        centerTitle: true,
-        title: Text(
-          "Nöbetçi Eczane",
-          style: TextStyle(
-            color: Colors.red,
-            fontWeight: FontWeight.w700,
-            fontSize: 30,
-          ),
-        ),
-        actions: [],
-        backgroundColor: Colors.white,
-      ),
-      body: Center(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              spacing: 5,
-              children: [ilSelectButton(context), ilceSelectButton(context)],
-            ),
+    return ValueListenableBuilder(
+      valueListenable: box.listenable(keys: ['isFirst']),
+      builder: (context, Box box, _) {
+        bool isFirst = box.get('isFirst', defaultValue: true);
 
-            controller.secilenIlce != null
-                ? Expanded(
-                  child: Widgets().Future(
-                    eczaneService,
-                    controller.normalizeToEnglish(controller.secilenSehir!),
-                    controller.normalizeToEnglish(controller.secilenIlce!),
-                  ),
-                ) /*EczaneItem(data: datalist, eczaneService: eczaneService),
-                )*/
-                : Text("Konum Bilgisi Girin"),
-            //EczaneItem(),
-          ],
-        ),
-      ),
-    );
-  }
+        if (isFirst) {
+          return FirstScreen(companents: companents, controller: controller);
+        }
 
-  FilledButton ilceSelectButton(BuildContext context) {
-    return FilledButton(
-      onPressed: () {
-        DropDownState(
-          dropDown: DropDown(
-            searchHintText: "İlçe Ara",
-            data: controller.yeniIcelerListesi,
-            onSelected: (ilceSelectedItem) {
-              controller.secilenIlce = ilceSelectedItem[0].data;
-              controller.saveData();
-              setState(() {});
-            },
-          ),
-        ).showModal(context);
+        return MainScrenn(
+          controller: controller,
+          eczaneService: eczaneService,
+          companents: companents,
+        );
       },
-      child: Text(
-        controller.secilenIlce == null
-            ? "İlçe Seçiniz"
-            : controller.secilenIlce!,
-      ),
-    );
-  }
-
-  FilledButton ilSelectButton(BuildContext context) {
-    return FilledButton(
-      onPressed: () {
-        DropDownState(
-          dropDown: DropDown(
-            searchHintText: "Şehir Ara",
-            data: controller.yeniIllerListesi,
-            onSelected: (ilSelectedItem) {
-              controller.secilenSehir = ilSelectedItem[0].data;
-              controller.secilenIlce = null;
-              controller.secilenIlinIlceleriniGetir(controller.secilenSehir!);
-              controller.saveData();
-              setState(() {});
-            },
-          ),
-        ).showModal(context);
-      },
-      child: Text(
-        controller.secilenSehir == null
-            ? "Şehir Seçiniz"
-            : controller.secilenSehir!,
-      ),
     );
   }
 }

@@ -11,6 +11,7 @@ class HomeController {
   String? secilenIlce;
   List<SelectedListItem<dynamic>> yeniIllerListesi = [];
   List<SelectedListItem<dynamic>> yeniIcelerListesi = [];
+  bool isFirst = true;
 
   Future<void> illeriGetir() async {
     String jsonString = await rootBundle.loadString('json/il-ilce.json');
@@ -76,6 +77,8 @@ class HomeController {
     yeniIcelerListesi =
         (box.get('yeniIcelerListesi', defaultValue: []) as List)
             .cast<SelectedListItem>();
+
+    isFirst = box.get('isFirst', defaultValue: true);
   }
 
   void saveData() {
@@ -84,7 +87,6 @@ class HomeController {
     box.put('secilenIlce', secilenIlce);
     box.put('yeniIllerListesi', yeniIllerListesi);
     box.put('yeniIcelerListesi', yeniIcelerListesi);
+    box.put('isFirst', isFirst);
   }
 }
-
-final controller = HomeController();

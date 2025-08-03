@@ -1,9 +1,13 @@
+import 'dart:ffi';
+
+import 'package:drop_down_list/drop_down_list.dart';
 import 'package:flutter/material.dart';
+import 'package:myapp/home_controller.dart';
 import 'package:myapp/model/eczane_model.dart';
 import 'package:myapp/services/eczane_service.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-class Widgets {
+class Companents {
   FutureBuilder<List<Data>> Future(
     EczaneService eczaneService,
     String il,
@@ -136,6 +140,124 @@ class Widgets {
     );
   }
 
+  FilledButton ilceSelectButton(
+    BuildContext context,
+    HomeController controller,
+    VoidCallback onChanged
+  ) {
+    return FilledButton(
+      onPressed: () {
+        DropDownState(
+          dropDown: DropDown(
+            searchHintText: "İlçe Ara",
+            data: controller.yeniIcelerListesi,
+            onSelected: (ilceSelectedItem) {
+              controller.secilenIlce = ilceSelectedItem[0].data;
+              controller.saveData();
+              onChanged();
+            },
+          ),
+        ).showModal(context);
+      },
+      child: Text(
+        controller.secilenIlce == null
+            ? "İlçe Seçiniz"
+            : controller.secilenIlce!,
+      ),
+    );
+  }
 
-  
+  FilledButton ilSelectButton(
+    BuildContext context,
+    HomeController controller,
+    VoidCallback onChanged,
+  ) {
+    return FilledButton(
+      onPressed: () {
+        DropDownState(
+          dropDown: DropDown(
+            searchHintText: "Şehir Ara",
+            data: controller.yeniIllerListesi,
+            onSelected: (ilSelectedItem) {
+              controller.secilenSehir = ilSelectedItem[0].data;
+              controller.secilenIlce = null;
+              controller.secilenIlinIlceleriniGetir(controller.secilenSehir!);
+              controller.saveData();
+              onChanged();
+            },
+          ),
+        ).showModal(context);
+      },
+      child: Text(
+        controller.secilenSehir == null
+            ? "Şehir Seçiniz"
+            : controller.secilenSehir!,
+      ),
+    );
+  }
+
+  FilledButton firstScreenIlce(
+    BuildContext context,
+    HomeController controller,
+    VoidCallback onChanged,
+  ) {
+    return FilledButton(
+      style: ButtonStyle(
+        backgroundColor: WidgetStateProperty.all(Colors.white),
+      ),
+      onPressed: () {
+        DropDownState(
+          dropDown: DropDown(
+            searchHintText: "İlçe Ara",
+            data: controller.yeniIcelerListesi,
+            onSelected: (ilceSelectedItem) async {
+              controller.secilenIlce = await ilceSelectedItem[0].data;
+              controller.isFirst = false;
+              controller.saveData();
+              onChanged();
+            },
+          ),
+        ).showModal(context);
+      },
+      child: Text(
+        controller.secilenIlce == null
+            ? "İlçe Seçiniz"
+            : controller.secilenIlce!,
+        style: TextStyle(color: Colors.red, fontSize: 25),
+      ),
+    );
+  }
+
+  FilledButton firstScreenIl(
+    BuildContext context,
+    HomeController controller,
+    VoidCallback onChanged,
+  ) {
+    return FilledButton(
+      style: ButtonStyle(
+        backgroundColor: WidgetStateProperty.all(Colors.white),
+      ),
+      onPressed: () {
+        DropDownState(
+          dropDown: DropDown(
+            searchHintText: "Şehir Ara",
+            data: controller.yeniIllerListesi,
+            onSelected: (ilSelectedItem) {
+              controller.secilenSehir = ilSelectedItem[0].data;
+              controller.secilenIlce = null;
+              controller.secilenIlinIlceleriniGetir(controller.secilenSehir!);
+              controller.saveData();
+              onChanged();
+            },
+          ),
+        ).showModal(context);
+      },
+      child: Text(
+        controller.secilenSehir == null
+            ? "Şehir Seçiniz"
+            : controller.secilenSehir!,
+        style: TextStyle(color: Colors.red, fontSize: 25),
+      ),
+    );
+  }
 }

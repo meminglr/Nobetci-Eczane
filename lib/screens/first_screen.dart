@@ -5,10 +5,12 @@ import 'package:myapp/widgets/companents.dart';
 class FirstScreen extends StatefulWidget {
   final Companents companents;
   final HomeController controller;
+  final VoidCallback onNext;
   const FirstScreen({
     super.key,
     required this.companents,
     required this.controller,
+    required this.onNext,
   });
 
   @override
@@ -24,21 +26,25 @@ class _FirstScreenState extends State<FirstScreen> {
         child: Column(
           spacing: 5,
           mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Text(
               "Nöbetçi Eczane",
               style: TextStyle(
                 color: Colors.white,
+
                 fontWeight: FontWeight.w700,
-                fontSize: 50,
+                fontSize: 45,
               ),
+              textAlign: TextAlign.center,
             ),
-            widget.companents.firstScreenIl(context, widget.controller , (){setState(() {
-              
-            });} ),
-            widget.companents.firstScreenIlce(context, widget.controller, (){setState(() {
-              
-            });}),
+            widget.companents.firstScreenIl(context, widget.controller, () {
+              setState(() {});
+            }),
+            widget.companents.firstScreenIlce(context, widget.controller, () {
+              widget.onNext();
+              setState(() {});
+            }),
           ],
         ),
       ),

@@ -1,11 +1,8 @@
-import 'dart:ffi';
-
 import 'package:drop_down_list/drop_down_list.dart';
 import 'package:flutter/material.dart';
 import 'package:myapp/home_controller.dart';
 import 'package:myapp/model/eczane_model.dart';
 import 'package:myapp/services/eczane_service.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class Companents {
   FutureBuilder<List<Data>> Future(
@@ -143,7 +140,7 @@ class Companents {
   FilledButton ilceSelectButton(
     BuildContext context,
     HomeController controller,
-    VoidCallback onChanged
+    VoidCallback onChanged,
   ) {
     return FilledButton(
       onPressed: () {
@@ -219,11 +216,18 @@ class Companents {
           ),
         ).showModal(context);
       },
-      child: Text(
-        controller.secilenIlce == null
-            ? "İlçe Seçiniz"
-            : controller.secilenIlce!,
-        style: TextStyle(color: Colors.red, fontSize: 25),
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Text(
+          controller.secilenIlce == null
+              ? "İlçe Seçiniz"
+              : controller.secilenIlce!,
+          style: TextStyle(
+            fontWeight: FontWeight.w600,
+            color: Colors.red,
+            fontSize: 25,
+          ),
+        ),
       ),
     );
   }
@@ -252,11 +256,18 @@ class Companents {
           ),
         ).showModal(context);
       },
-      child: Text(
-        controller.secilenSehir == null
-            ? "Şehir Seçiniz"
-            : controller.secilenSehir!,
-        style: TextStyle(color: Colors.red, fontSize: 25),
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Text(
+          controller.secilenSehir == null
+              ? "Şehir Seçiniz"
+              : controller.secilenSehir!,
+          style: TextStyle(
+            fontWeight: FontWeight.w600,
+            color: Colors.red,
+            fontSize: 25,
+          ),
+        ),
       ),
     );
   }

@@ -26,6 +26,9 @@ class MainScrenn extends StatefulWidget {
 class _MainScrennState extends State<MainScrenn> {
   List<Data> eczaneListesi = [];
   bool isLoading = true;
+  GoogleMapController? _mapController;
+  Set<Marker> _markers = {};
+
   Future<void> _loadEczaneler() async {
     eczaneListesi = [];
     var result = await widget.eczaneService.getEczane(
@@ -33,6 +36,22 @@ class _MainScrennState extends State<MainScrenn> {
       widget.controller.normalizeToEnglish(widget.controller.secilenIlce!),
     );
     eczaneListesi = result;
+
+    _markers.clear();
+    for (var eczane in eczaneListesi) {
+      if (eczane.latitude != null && eczane.longitude != null) {
+        _markers.add(
+          Marker(
+            markerId: MarkerId(
+              eczane.pharmacyName ?? Random().nextInt(1000).toString(),
+            ),
+            position: LatLng(eczane.latitude!, eczane.longitude!),
+            infoWindow: InfoWindow(title: eczane.pharmacyName),
+          ),
+        );
+      }
+    }
+
     setState(() {
       setState(() {
         isLoading = false;
@@ -78,13 +97,30 @@ class _MainScrennState extends State<MainScrenn> {
       body: Center(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             if (widget.controller.secilenSehir == null)
-              Text("İl Bilgisi Girin")
+              Text(
+                "İl Bilgisi Girin",
+                style: TextStyle(
+                  color: Colors.red,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 30,
+                ),
+              )
             else if (widget.controller.secilenIlce == null)
-              Text("İlçe Bilgisi Girin")
+              Text(
+                "İlçe Bilgisi Girin",
+                style: TextStyle(
+                  color: Colors.red,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 30,
+                ),
+              )
+            else if (eczaneListesi.isEmpty)
+              CircularProgressIndicator()
             else
-              Expanded(
+              /* Expanded(
                 child: widget.companents.future(
                   widget.eczaneService,
                   widget.controller.normalizeToEnglish(
@@ -93,6 +129,160 @@ class _MainScrennState extends State<MainScrenn> {
                   widget.controller.normalizeToEnglish(
                     widget.controller.secilenIlce!,
                   ),
+                ),
+              ),*/
+              Expanded(
+                child: Column(
+                  children: [
+                    Expanded(
+                      flex: 2,
+                      child: GoogleMap(
+                        onMapCreated:
+                            (controller) => _mapController = controller,
+                        initialCameraPosition: CameraPosition(
+                          target: LatLng(
+                            eczaneListesi.first.latitude!,
+                            eczaneListesi.first.longitude!,
+                          ),
+                          zoom: 13,
+                        ),
+                        markers: _markers,
+                        myLocationEnabled: true,
+                      ),
+                    ),
+                    Expanded(
+                      flex: 3,
+                      child: ListView.builder(
+                        physics: BouncingScrollPhysics(),
+                        itemCount: eczaneListesi.length,
+                        itemBuilder: (context, index) {
+                          var item = eczaneListesi[index];
+                          return Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: SizedBox(
+                              height: 100,
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    flex: 1,
+                                    child: InkWell(
+                                      borderRadius: BorderRadius.horizontal(
+                                        left: Radius.circular(20),
+                                      ),
+                                      onTap: () {
+                                        widget.eczaneService.openMap(
+                                          item.latitude!,
+                                          item.longitude!,
+                                        );
+                                      },
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          color: Colors.blue,
+                                          borderRadius: BorderRadius.horizontal(
+                                            left: Radius.circular(20),
+                                            right: Radius.circular(5),
+                                          ),
+                                        ),
+                                        child: Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Icon(
+                                              Icons.map_outlined,
+                                              color: Colors.blue[100],
+                                            ),
+                                            Text(
+                                              "Harita",
+                                              style: TextStyle(
+                                                color: Colors.blue[100],
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  Expanded(
+                                    flex: 3,
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        color: Colors.grey[100],
+                                        borderRadius: BorderRadius.all(
+                                          Radius.circular(5),
+                                        ),
+                                      ),
+
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              item.pharmacyName!,
+                                              style: TextStyle(
+                                                fontSize: 20,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                            Text(
+                                              item.address!,
+                                              style: TextStyle(fontSize: 10),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  Expanded(
+                                    flex: 1,
+                                    child: InkWell(
+                                      borderRadius: BorderRadius.horizontal(
+                                        right: Radius.circular(20),
+                                      ),
+                                      onTap: () {
+                                        widget.eczaneService.makePhoneCall(
+                                          item.phone!,
+                                        );
+                                      },
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          color: Colors.green,
+                                          borderRadius: BorderRadius.horizontal(
+                                            right: Radius.circular(20),
+
+                                            left: Radius.circular(5),
+                                          ),
+                                        ),
+                                        child: Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Icon(
+                                              Icons.call_outlined,
+                                              color: Colors.green[100],
+                                            ),
+                                            Text(
+                                              "Ara",
+                                              style: TextStyle(
+                                                color: Colors.green[100],
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
                 ),
               ),
           ],

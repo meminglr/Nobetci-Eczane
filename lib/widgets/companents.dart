@@ -5,7 +5,7 @@ import 'package:myapp/model/eczane_model.dart';
 import 'package:myapp/services/eczane_service.dart';
 
 class Companents {
-  FutureBuilder<List<Data>> Future(
+  FutureBuilder<List<Data>> future(
     EczaneService eczaneService,
     String il,
     String ilce,
@@ -14,10 +14,12 @@ class Companents {
       future: eczaneService.getEczane(il, ilce),
       builder: (context, snapshot) {
         if (snapshot.hasData) {
+          final eczaneler = snapshot.data!;
           return ListView.builder(
-            itemCount: snapshot.data!.length,
+            physics: BouncingScrollPhysics(),
+            itemCount: eczaneler.length,
             itemBuilder: (context, index) {
-              var item = snapshot.data![index];
+              var item = eczaneler[index];
               return Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: SizedBox(
@@ -268,6 +270,41 @@ class Companents {
             fontSize: 25,
           ),
         ),
+      ),
+    );
+  }
+
+  Container floatingActionButton({
+    required BuildContext context,
+    required HomeController controller,
+    required Companents companents,
+    required VoidCallback onChanged,
+  }) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.white, // Beyaz arkaplan
+        borderRadius: BorderRadius.circular(20), // Yuvarlak köşeler
+        boxShadow: [
+          BoxShadow(
+            // İstersen hafif gölge ekleyebilirsin
+            color: Colors.black26,
+            blurRadius: 15,
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          companents.ilSelectButton(context, controller, () {
+            onChanged();
+          }),
+          SizedBox(width: 5), // spacing yerine SizedBox kullandım
+          companents.ilceSelectButton(context, controller, () {
+            onChanged();
+          }),
+        ],
       ),
     );
   }

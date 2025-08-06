@@ -1,7 +1,9 @@
 import 'dart:convert';
 import 'package:drop_down_list/model/selected_list_item.dart';
 import 'package:flutter/services.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:myapp/model/eczane_model.dart';
 import 'package:myapp/model/sehir_model.dart';
 
 class HomeController {
@@ -24,20 +26,20 @@ class HomeController {
   void modelToString() {
     yeniIllerListesi = [];
 
-    illerListesi.forEach((element) {
+    for (var element in illerListesi) {
       yeniIllerListesi.add(SelectedListItem(data: element.ilAdi));
-    });
+    }
   }
 
   void secilenIlinIlceleriniGetir(String secilenSehir) {
     yeniIcelerListesi = [];
-    illerListesi.forEach((element) {
+    for (var element in illerListesi) {
       if (element.ilAdi == secilenSehir) {
         element.ilceler.forEach((element) {
           yeniIcelerListesi.add(SelectedListItem(data: element.ilceAdi));
         });
       }
-    });
+    }
   }
 
   String normalizeToEnglish(String input) {
@@ -89,4 +91,6 @@ class HomeController {
     box.put('yeniIcelerListesi', yeniIcelerListesi);
     box.put('isFirst', isFirst);
   }
+
+
 }

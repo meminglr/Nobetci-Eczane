@@ -30,13 +30,14 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  cupertino_icons: ^1.0.8
   http: ^1.4.0
   drop_down_list: ^2.0.0
   url_launcher: ^6.3.2
   hive: ^2.2.3
   hive_flutter: ^1.1.0
   path_provider: ^2.0.15
+  smooth_list_view: ^2.0.2
+  google_maps_flutter: ^2.5.0
 
 
 dev_dependencies:

@@ -5,12 +5,10 @@ import 'package:myapp/widgets/companents.dart';
 class FirstScreen extends StatefulWidget {
   final Companents companents;
   final HomeController controller;
-  final VoidCallback onNext;
   const FirstScreen({
     super.key,
     required this.companents,
     required this.controller,
-    required this.onNext,
   });
 
   @override
@@ -21,6 +19,7 @@ class _FirstScreenState extends State<FirstScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(),
       backgroundColor: Colors.red,
       body: Center(
         child: Column(
@@ -42,7 +41,6 @@ class _FirstScreenState extends State<FirstScreen> {
               setState(() {});
             }),
             widget.companents.firstScreenIlce(context, widget.controller, () {
-              widget.onNext();
               setState(() {});
             }),
           ],

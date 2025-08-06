@@ -6,6 +6,7 @@ import 'package:myapp/model/eczane_model.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class EczaneService {
+
   Future<List<Data>> getEczane(String city, String district) async {
     var response = await http.get(
       Uri.parse("$url&city=$city&district=$district"),
@@ -45,4 +46,5 @@ class EczaneService {
     }
   }
 
+  
 }

@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:myapp/home_controller.dart';
 import 'package:myapp/model/eczane_model.dart';
+import 'package:myapp/screens/exapndebele_map.dart';
 import 'package:myapp/screens/first_screen.dart';
 import 'package:myapp/screens/main_screen.dart';
+import 'package:myapp/screens/silver_screen.dart';
+import 'package:myapp/screens/sliver_screen2.dart';
 import 'package:myapp/services/eczane_service.dart';
 import 'package:myapp/widgets/companents.dart';
 
@@ -40,7 +43,7 @@ class _HomePageState extends State<HomePage> {
         if (isFirst) {
           return FirstScreen(companents: companents, controller: controller);
         } else {
-          return MainScrenn(
+          return SilverScreenView(
             controller: controller,
             eczaneService: eczaneService,
             companents: companents,

@@ -24,10 +24,11 @@ class MainScrenn extends StatefulWidget {
 }
 
 class _MainScrennState extends State<MainScrenn> {
+  List<Data> dataList = DataList().dataList;
   List<Data> eczaneListesi = [];
   bool isLoading = true;
-  GoogleMapController? _mapController;
-  Set<Marker> _markers = {};
+  GoogleMapController? mapController;
+  Set<Marker> markers = {};
 
   Future<void> _loadEczaneler() async {
     eczaneListesi = [];
@@ -37,10 +38,10 @@ class _MainScrennState extends State<MainScrenn> {
     );
     eczaneListesi = result;
 
-    _markers.clear();
-    for (var eczane in eczaneListesi) {
+    markers.clear();
+    for (var eczane in dataList) {
       if (eczane.latitude != null && eczane.longitude != null) {
-        _markers.add(
+        markers.add(
           Marker(
             markerId: MarkerId(
               eczane.pharmacyName ?? Random().nextInt(1000).toString(),
@@ -62,12 +63,10 @@ class _MainScrennState extends State<MainScrenn> {
   @override
   void initState() {
     super.initState();
-    _loadEczaneler();
   }
 
   @override
   Widget build(BuildContext context) {
-    List<Data> dataList = DataList().dataList;
     return Scaffold(
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: widget.companents.floatingActionButton(
@@ -117,7 +116,7 @@ class _MainScrennState extends State<MainScrenn> {
                   fontSize: 30,
                 ),
               )
-            else if (eczaneListesi.isEmpty)
+            else if (dataList.isEmpty)
               CircularProgressIndicator()
             else
               /* Expanded(
@@ -136,158 +135,148 @@ class _MainScrennState extends State<MainScrenn> {
                   children: [
                     Expanded(
                       flex: 2,
-                      child: GoogleMap(
-                        onMapCreated:
-                            (controller) => _mapController = controller,
-                        initialCameraPosition: CameraPosition(
-                          target: LatLng(
-                            eczaneListesi.first.latitude!,
-                            eczaneListesi.first.longitude!,
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: ClipRRect(
+                          borderRadius: BorderRadiusGeometry.all(
+                            Radius.circular(20),
                           ),
-                          zoom: 13,
-                        ),
-                        markers: _markers,
-                        myLocationEnabled: true,
-                      ),
-                    ),
-                    Expanded(
-                      flex: 3,
-                      child: ListView.builder(
-                        physics: BouncingScrollPhysics(),
-                        itemCount: eczaneListesi.length,
-                        itemBuilder: (context, index) {
-                          var item = eczaneListesi[index];
-                          return Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: SizedBox(
-                              height: 100,
-                              child: Row(
-                                children: [
-                                  Expanded(
-                                    flex: 1,
-                                    child: InkWell(
-                                      borderRadius: BorderRadius.horizontal(
-                                        left: Radius.circular(20),
-                                      ),
-                                      onTap: () {
-                                        widget.eczaneService.openMap(
-                                          item.latitude!,
-                                          item.longitude!,
-                                        );
-                                      },
-                                      child: Container(
-                                        decoration: BoxDecoration(
-                                          color: Colors.blue,
-                                          borderRadius: BorderRadius.horizontal(
-                                            left: Radius.circular(20),
-                                            right: Radius.circular(5),
-                                          ),
-                                        ),
-                                        child: Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            Icon(
-                                              Icons.map_outlined,
-                                              color: Colors.blue[100],
-                                            ),
-                                            Text(
-                                              "Harita",
-                                              style: TextStyle(
-                                                color: Colors.blue[100],
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  Expanded(
-                                    flex: 3,
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                        color: Colors.grey[100],
-                                        borderRadius: BorderRadius.all(
-                                          Radius.circular(5),
-                                        ),
-                                      ),
-
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              item.pharmacyName!,
-                                              style: TextStyle(
-                                                fontSize: 20,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
-                                            Text(
-                                              item.address!,
-                                              style: TextStyle(fontSize: 10),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  Expanded(
-                                    flex: 1,
-                                    child: InkWell(
-                                      borderRadius: BorderRadius.horizontal(
-                                        right: Radius.circular(20),
-                                      ),
-                                      onTap: () {
-                                        widget.eczaneService.makePhoneCall(
-                                          item.phone!,
-                                        );
-                                      },
-                                      child: Container(
-                                        decoration: BoxDecoration(
-                                          color: Colors.green,
-                                          borderRadius: BorderRadius.horizontal(
-                                            right: Radius.circular(20),
-
-                                            left: Radius.circular(5),
-                                          ),
-                                        ),
-                                        child: Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            Icon(
-                                              Icons.call_outlined,
-                                              color: Colors.green[100],
-                                            ),
-                                            Text(
-                                              "Ara",
-                                              style: TextStyle(
-                                                color: Colors.green[100],
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
+                          child: GoogleMap(
+                            onMapCreated:
+                                (controller) => mapController = controller,
+                            initialCameraPosition: CameraPosition(
+                              target: LatLng(
+                                dataList.first.latitude!,
+                                dataList.first.longitude!,
                               ),
+                              zoom: 13,
                             ),
-                          );
-                        },
+                            markers: markers,
+                            myLocationEnabled: true,
+                          ),
+                        ),
                       ),
                     ),
+                    Expanded(flex: 3, child: eczaneListView(dataList)),
                   ],
                 ),
               ),
           ],
         ),
       ),
+    );
+  }
+
+  //***************************************************************// */
+
+  ListView eczaneListView(List<Data> dataList) {
+    return ListView.builder(
+      physics: BouncingScrollPhysics(),
+      itemCount: dataList.length,
+      itemBuilder: (context, index) {
+        var item = dataList[index];
+        return Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: SizedBox(
+            height: 100,
+            child: Row(
+              children: [
+                Expanded(
+                  flex: 1,
+                  child: InkWell(
+                    borderRadius: BorderRadius.horizontal(
+                      left: Radius.circular(20),
+                    ),
+                    onTap: () {
+                      widget.eczaneService.openMap(
+                        item.latitude!,
+                        item.longitude!,
+                      );
+                    },
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.blue,
+                        borderRadius: BorderRadius.horizontal(
+                          left: Radius.circular(20),
+                          right: Radius.circular(5),
+                        ),
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.map_outlined, color: Colors.blue[100]),
+                          Text(
+                            "Harita",
+                            style: TextStyle(color: Colors.blue[100]),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  flex: 3,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.grey[100],
+                      borderRadius: BorderRadius.all(Radius.circular(5)),
+                    ),
+
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            item.pharmacyName!,
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(item.address!, style: TextStyle(fontSize: 10)),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  flex: 1,
+                  child: InkWell(
+                    borderRadius: BorderRadius.horizontal(
+                      right: Radius.circular(20),
+                    ),
+                    onTap: () {
+                      widget.eczaneService.makePhoneCall(item.phone!);
+                    },
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.green,
+                        borderRadius: BorderRadius.horizontal(
+                          right: Radius.circular(20),
+
+                          left: Radius.circular(5),
+                        ),
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.call_outlined, color: Colors.green[100]),
+                          Text(
+                            "Ara",
+                            style: TextStyle(color: Colors.green[100]),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }

@@ -38,7 +38,9 @@ dependencies:
   path_provider: ^2.0.15
   smooth_list_view: ^2.0.2
   google_maps_flutter: ^2.5.0
-
+  pointer_interceptor: ^0.10.1+2
+  geolocator: ^14.0.2
+  permission_handler: ^12.0.1
 
 dev_dependencies:
   flutter_test:

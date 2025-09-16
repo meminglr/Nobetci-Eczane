@@ -29,6 +29,7 @@ class HomeController {
     for (var element in illerListesi) {
       yeniIllerListesi.add(SelectedListItem(data: element.ilAdi));
     }
+    secilenSehir != null ? secilenIlinIlceleriniGetir(secilenSehir!) : null;
   }
 
   void secilenIlinIlceleriniGetir(String secilenSehir) {
@@ -73,13 +74,6 @@ class HomeController {
     illerListesi = box.get('illerListesi', defaultValue: []).cast<String>();
     secilenSehir = box.get('secilenSehir');
     secilenIlce = box.get('secilenIlce');
-    yeniIllerListesi =
-        (box.get('yeniIllerListesi', defaultValue: []) as List)
-            .cast<SelectedListItem>();
-    yeniIcelerListesi =
-        (box.get('yeniIcelerListesi', defaultValue: []) as List)
-            .cast<SelectedListItem>();
-
     isFirst = box.get('isFirst', defaultValue: true);
   }
 
@@ -87,10 +81,6 @@ class HomeController {
     box.put('illerListesi', illerListesi);
     box.put('secilenSehir', secilenSehir);
     box.put('secilenIlce', secilenIlce);
-    box.put('yeniIllerListesi', yeniIllerListesi);
-    box.put('yeniIcelerListesi', yeniIcelerListesi);
     box.put('isFirst', isFirst);
   }
-
-
 }

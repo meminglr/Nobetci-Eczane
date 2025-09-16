@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:myapp/home_page.dart';
+import 'package:myapp/model/sehir_model.dart';
 import 'package:myapp/services/selected_list_item.dart';
 
 void main() async {
@@ -11,9 +12,13 @@ void main() async {
     ),
   );
   WidgetsFlutterBinding.ensureInitialized();
+
   await Hive.initFlutter();
   Hive.registerAdapter(SelectedListItemAdapter());
+  Hive.registerAdapter(IllerAdapter());
+  Hive.registerAdapter(IlcelerAdapter());
   await Hive.openBox('appData');
+
   runApp(MyApp());
 }
 
@@ -43,7 +48,7 @@ class MyApp extends StatelessWidget {
 
 /*
 git remote add origin https://github.com/meminglr/Nobetci-Eczane.git
-git branch -M main
+git remote add origin https://github.com/meminglr/Nobetci-Eczane.git
 git push -u origin main
 
 echo "# Nobetci-Eczane" >> README.md

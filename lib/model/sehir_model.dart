@@ -1,7 +1,15 @@
+import 'package:hive/hive.dart';
+part 'sehir_model.g.dart';
+
+@HiveType(typeId: 1)
 class Iller {
+  @HiveField(0)
   String? ilAdi;
+  @HiveField(1)
   String? plakaKodu;
+  @HiveField(2)
   List<Ilceler>? ilceler;
+  @HiveField(3)
   String? kisaBilgi;
 
   Iller({this.ilAdi, this.plakaKodu, this.ilceler, this.kisaBilgi});
@@ -30,19 +38,26 @@ class Iller {
   }
 }
 
+@HiveType(typeId: 2)
 class Ilceler {
+  @HiveField(0)
   String? ilceAdi;
+  @HiveField(1)
   String? nufus;
+  @HiveField(2)
   String? erkekNufus;
+  @HiveField(3)
   String? kadinNufus;
+  @HiveField(4)
   String? yuzolcumu;
 
-  Ilceler(
-      {this.ilceAdi,
-      this.nufus,
-      this.erkekNufus,
-      this.kadinNufus,
-      this.yuzolcumu});
+  Ilceler({
+    this.ilceAdi,
+    this.nufus,
+    this.erkekNufus,
+    this.kadinNufus,
+    this.yuzolcumu,
+  });
 
   Ilceler.fromJson(Map<String, dynamic> json) {
     ilceAdi = json['ilce_adi'];

@@ -36,6 +36,8 @@ class _OptimizedExpandState extends State<OptimizedExpand> {
   final double _maxHeight = 300;
   LatLng? _initialCameraPosition;
   Position? _userPosition;
+  final ValueNotifier<double> _fabOffsetNotifier = ValueNotifier<double>(0.0);
+  double _lastScrollOffset = 0.0;
 
   @override
   void initState() {
@@ -104,6 +106,8 @@ class _OptimizedExpandState extends State<OptimizedExpand> {
         });
 
       final newMarkers = <Marker>{};
+      final LatLngBounds bounds = await _calculateBounds(position);
+
       for (final eczane in sortedDataList) {
         final lat = eczane.latitude;
         final lng = eczane.longitude;
@@ -128,12 +132,7 @@ class _OptimizedExpandState extends State<OptimizedExpand> {
       });
 
       if (mapController != null) {
-        mapController!.animateCamera(
-          CameraUpdate.newLatLngZoom(
-            LatLng(position.latitude, position.longitude),
-            14,
-          ),
-        );
+        mapController!.animateCamera(CameraUpdate.newLatLngBounds(bounds, 50));
       }
     } catch (e) {
       if (_initialCameraPosition != null && mapController != null) {
@@ -142,6 +141,29 @@ class _OptimizedExpandState extends State<OptimizedExpand> {
         );
       }
     }
+  }
+
+  Future<LatLngBounds> _calculateBounds(Position position) async {
+    double minLat = position.latitude;
+    double maxLat = position.latitude;
+    double minLng = position.longitude;
+    double maxLng = position.longitude;
+
+    for (final eczane in sortedDataList) {
+      final lat = eczane.latitude;
+      final lng = eczane.longitude;
+      if (lat != null && lng != null) {
+        minLat = min(minLat, lat);
+        maxLat = max(maxLat, lat);
+        minLng = min(minLng, lng);
+        maxLng = max(maxLng, lng);
+      }
+    }
+
+    return LatLngBounds(
+      southwest: LatLng(minLat, minLng),
+      northeast: LatLng(maxLat, maxLng),
+    );
   }
 
   void _initializeMarkersAndCamera() {
@@ -184,12 +206,21 @@ class _OptimizedExpandState extends State<OptimizedExpand> {
       _minHeight,
       _maxHeight,
     );
+
+    final currentOffset = _scrollController.offset;
+    if (currentOffset > _lastScrollOffset && currentOffset > 0) {
+      _fabOffsetNotifier.value = 100.0; // Aşağı kaydırıldığında FAB kaybolur
+    } else if (currentOffset < _lastScrollOffset) {
+      _fabOffsetNotifier.value = 0.0; // Yukarı kaydırıldığında FAB görünür
+    }
+    _lastScrollOffset = currentOffset;
   }
 
   @override
   void dispose() {
     _scrollController.dispose();
     _mapHeightNotifier.dispose();
+    _fabOffsetNotifier.dispose();
     mapController?.dispose();
     super.dispose();
   }
@@ -197,6 +228,7 @@ class _OptimizedExpandState extends State<OptimizedExpand> {
   Widget _eczaneListView() => ListView.builder(
     controller: _scrollController,
     physics: const BouncingScrollPhysics(),
+    padding: const EdgeInsets.only(bottom: 80.0), // FAB boyutuna eşdeğer boşluk
     itemCount: sortedDataList.length,
     itemBuilder: (context, index) => _EczaneListItem(
       item: sortedDataList[index],
@@ -208,11 +240,19 @@ class _OptimizedExpandState extends State<OptimizedExpand> {
   @override
   Widget build(BuildContext context) => Scaffold(
     floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-    floatingActionButton: widget.companents.floatingActionButton(
-      context: context,
-      companents: widget.companents,
-      controller: widget.controller,
-      onChanged: () {},
+    floatingActionButton: ValueListenableBuilder<double>(
+      valueListenable: _fabOffsetNotifier,
+      builder: (context, offset, _) => AnimatedSlide(
+        offset: Offset(0, offset / 100),
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+        child: widget.companents.floatingActionButton(
+          context: context,
+          companents: widget.companents,
+          controller: widget.controller,
+          onChanged: () {},
+        ),
+      ),
     ),
     backgroundColor: Colors.white,
     appBar: AppBar(
@@ -234,21 +274,23 @@ class _OptimizedExpandState extends State<OptimizedExpand> {
           padding: const EdgeInsets.all(8),
           child: ValueListenableBuilder<double>(
             valueListenable: _mapHeightNotifier,
-            builder: (context, height, _) => AnimatedContainer(
-              duration: const Duration(milliseconds: 16),
-              curve: Curves.linear,
+            builder: (context, height, child) => AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeInOut,
               height: height,
               width: double.infinity,
-              child: ClipRRect(
-                borderRadius: const BorderRadius.all(Radius.circular(20)),
-                child: _GoogleMapWidget(
-                  markers: markers,
-                  initialCameraPosition: _initialCameraPosition,
-                  onMapCreated: (controller) {
-                    mapController = controller;
-                    _requestLocationPermission();
-                  },
-                ),
+              child: child, // child zaten tek seferlik oluşturulan map widget
+            ),
+            // child parametresi sadece bir kez oluşturulur, rebuild sırasında tekrar oluşturulmaz
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(20),
+              child: _GoogleMapWidget(
+                markers: markers,
+                initialCameraPosition: _initialCameraPosition,
+                onMapCreated: (controller) {
+                  mapController = controller;
+                  _requestLocationPermission();
+                },
               ),
             ),
           ),

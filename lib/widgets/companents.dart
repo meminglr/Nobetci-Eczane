@@ -279,6 +279,7 @@ class Companents {
     required HomeController controller,
     required Companents companents,
     required VoidCallback onChanged,
+    required VoidCallback onChanged2,
   }) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
@@ -302,7 +303,7 @@ class Companents {
           }),
           SizedBox(width: 5), // spacing yerine SizedBox kullandım
           companents.ilceSelectButton(context, controller, () {
-            onChanged();
+            onChanged2();
           }),
         ],
       ),

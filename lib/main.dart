@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:myapp/deneme.dart';
 import 'package:myapp/home_page.dart';
 import 'package:myapp/model/sehir_model.dart';
+import 'package:myapp/model/yeni_eczane_model.dart';
 import 'package:myapp/services/selected_list_item.dart';
+import 'package:myapp/services/yeni_eczane_service.dart';
 
 void main() async {
   SystemChrome.setSystemUIOverlayStyle(
@@ -31,9 +34,7 @@ class MyApp extends StatelessWidget {
       title: 'Flutter Demo',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        brightness: Brightness.light,
         useMaterial3: true,
-        primaryColor: Colors.red,
         fontFamily: 'Poppins',
         filledButtonTheme: FilledButtonThemeData(
           style: ButtonStyle(

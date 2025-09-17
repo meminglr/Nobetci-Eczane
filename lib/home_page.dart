@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:myapp/home_controller.dart';
 import 'package:myapp/model/eczane_model.dart';
-import 'package:myapp/screens/cloaude_expand.dart';
+import 'package:myapp/model/yeni_eczane_model.dart';
 import 'package:myapp/screens/first_screen.dart';
 import 'package:myapp/screens/optimized_expand.dart';
 import 'package:myapp/services/eczane_service.dart';
+import 'package:myapp/services/yeni_eczane_service.dart';
 import 'package:myapp/widgets/companents.dart';
 
 class HomePage extends StatefulWidget {
@@ -29,7 +30,7 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     final box = controller.box;
-    EczaneService eczaneService = EczaneService();
+    YeniEczaneService yeniEczaneService = YeniEczaneService();
     Companents companents = Companents();
 
     return ValueListenableBuilder(
@@ -43,7 +44,7 @@ class _HomePageState extends State<HomePage> {
         } else {
           return OptimizedExpand(
             controller: controller,
-            eczaneService: eczaneService,
+            eczaneService: yeniEczaneService,
             companents: companents,
           );
         }

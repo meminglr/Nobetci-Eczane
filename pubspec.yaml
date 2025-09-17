@@ -41,6 +41,8 @@ dependencies:
   pointer_interceptor: ^0.10.1+2
   geolocator: ^14.0.2
   permission_handler: ^12.0.1
+  nobetci_eczaneler: ^0.0.3
+  expressive_loading_indicator: ^0.0.1
 
 dev_dependencies:
   flutter_test:

@@ -73,6 +73,9 @@ class _MainScrennState extends State<MainScrenn> {
         context: context,
         companents: widget.companents,
         controller: widget.controller,
+        onChanged2: () {
+          setState(() {});
+        },
         onChanged: () {
           _loadEczaneler();
           setState(() {});
@@ -142,8 +145,8 @@ class _MainScrennState extends State<MainScrenn> {
                             Radius.circular(20),
                           ),
                           child: GoogleMap(
-                            onMapCreated:
-                                (controller) => mapController = controller,
+                            onMapCreated: (controller) =>
+                                mapController = controller,
                             initialCameraPosition: CameraPosition(
                               target: LatLng(
                                 dataList.first.latitude!,

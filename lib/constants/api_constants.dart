@@ -1,2 +1,2 @@
 String url =
-    "https://www.nosyapi.com/apiv2/service/pharmacies-on-duty?apiKey=gpr3RKGpQ07pt5qTBHoJ7oAYhaDRiyd66w4pbLG3nDhnHZcQTON6bY5Dt88y";
+    "http://45.141.151.232:5678/webhook/da5a9fd8-ddcf-4a10-b8c5-bab0c23fb107";

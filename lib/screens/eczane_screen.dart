@@ -9,12 +9,12 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:myapp/home_controller.dart';
 import 'package:myapp/widgets/companents.dart';
 
-class OptimizedExpand extends StatefulWidget {
+class EczaneScreen extends StatefulWidget {
   final HomeController controller;
   final YeniEczaneService eczaneService;
   final Companents companents;
 
-  const OptimizedExpand({
+  const EczaneScreen({
     super.key,
     required this.controller,
     required this.eczaneService,
@@ -22,10 +22,10 @@ class OptimizedExpand extends StatefulWidget {
   });
 
   @override
-  State<OptimizedExpand> createState() => _OptimizedExpandState();
+  State<EczaneScreen> createState() => _EczaneScreenState();
 }
 
-class _OptimizedExpandState extends State<OptimizedExpand> {
+class _EczaneScreenState extends State<EczaneScreen> {
   final List<YeniEczane> eczaneList = [];
   List<YeniEczane> sortedDataList = [];
   bool isLoading = true;
@@ -232,10 +232,8 @@ class _OptimizedExpandState extends State<OptimizedExpand> {
   }
 
   void _onScroll() {
-    _mapHeightNotifier.value = (_maxHeight - _scrollController.offset).clamp(
-      _minHeight,
-      _maxHeight,
-    );
+    _mapHeightNotifier.value = (_maxHeight - _scrollController.position.pixels)
+        .clamp(_minHeight, _maxHeight);
 
     final currentOffset = _scrollController.offset;
     if (currentOffset > _lastScrollOffset && currentOffset > 0) {
@@ -273,7 +271,7 @@ class _OptimizedExpandState extends State<OptimizedExpand> {
     floatingActionButton: ValueListenableBuilder<double>(
       valueListenable: _fabOffsetNotifier,
       builder: (context, offset, _) => AnimatedSlide(
-        offset: Offset(0, offset / 100),
+        offset: Offset(0, offset / 50),
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
         child: widget.companents.floatingActionButton(
@@ -313,7 +311,7 @@ class _OptimizedExpandState extends State<OptimizedExpand> {
           child: ValueListenableBuilder<double>(
             valueListenable: _mapHeightNotifier,
             builder: (context, height, child) => AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
+              duration: const Duration(milliseconds: 100),
               curve: Curves.easeInOut,
               height: height,
               width: double.infinity,
@@ -373,6 +371,18 @@ class _OptimizedExpandState extends State<OptimizedExpand> {
             ),
           ),
         ),
+
+        GestureDetector(
+          behavior: HitTestBehavior.translucent,
+          onVerticalDragUpdate: (details) {
+            _mapHeightNotifier.value =
+                (_mapHeightNotifier.value + details.delta.dy).clamp(
+                  _minHeight,
+                  _maxHeight,
+                );
+          },
+          child: SizedBox(child: const Center(child: Icon(Icons.drag_handle))),
+        ),
         Expanded(
           child: isLoading
               ? Center(
@@ -410,7 +420,7 @@ class _GoogleMapWidget extends StatelessWidget {
     onMapCreated: onMapCreated,
     initialCameraPosition: CameraPosition(
       target: initialCameraPosition ?? const LatLng(39.0, 35.0),
-      zoom: 10,
+      zoom: 4,
     ),
     markers: markers,
 

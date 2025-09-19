@@ -4,7 +4,7 @@ import 'package:myapp/home_controller.dart';
 import 'package:myapp/model/eczane_model.dart';
 import 'package:myapp/model/yeni_eczane_model.dart';
 import 'package:myapp/screens/first_screen.dart';
-import 'package:myapp/screens/optimized_expand.dart';
+import 'package:myapp/screens/eczane_screen.dart';
 import 'package:myapp/services/eczane_service.dart';
 import 'package:myapp/services/yeni_eczane_service.dart';
 import 'package:myapp/widgets/companents.dart';
@@ -42,7 +42,7 @@ class _HomePageState extends State<HomePage> {
         if (isFirst) {
           return FirstScreen(companents: companents, controller: controller);
         } else {
-          return OptimizedExpand(
+          return EczaneScreen(
             controller: controller,
             eczaneService: yeniEczaneService,
             companents: companents,

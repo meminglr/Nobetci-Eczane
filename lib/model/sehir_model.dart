@@ -20,20 +20,20 @@ class Iller {
     if (json['ilceler'] != null) {
       ilceler = <Ilceler>[];
       json['ilceler'].forEach((v) {
-        ilceler!.add(new Ilceler.fromJson(v));
+        ilceler!.add(Ilceler.fromJson(v));
       });
     }
     kisaBilgi = json['kisa_bilgi'];
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['il_adi'] = this.ilAdi;
-    data['plaka_kodu'] = this.plakaKodu;
-    if (this.ilceler != null) {
-      data['ilceler'] = this.ilceler!.map((v) => v.toJson()).toList();
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['il_adi'] = ilAdi;
+    data['plaka_kodu'] = plakaKodu;
+    if (ilceler != null) {
+      data['ilceler'] = ilceler!.map((v) => v.toJson()).toList();
     }
-    data['kisa_bilgi'] = this.kisaBilgi;
+    data['kisa_bilgi'] = kisaBilgi;
     return data;
   }
 }
@@ -68,12 +68,12 @@ class Ilceler {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['ilce_adi'] = this.ilceAdi;
-    data['nufus'] = this.nufus;
-    data['erkek_nufus'] = this.erkekNufus;
-    data['kadin_nufus'] = this.kadinNufus;
-    data['yuzolcumu'] = this.yuzolcumu;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['ilce_adi'] = ilceAdi;
+    data['nufus'] = nufus;
+    data['erkek_nufus'] = erkekNufus;
+    data['kadin_nufus'] = kadinNufus;
+    data['yuzolcumu'] = yuzolcumu;
     return data;
   }
 }

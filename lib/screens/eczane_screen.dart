@@ -58,7 +58,7 @@ class _EczaneScreenState extends State<EczaneScreen> {
         eczaneList.clear();
         eczaneList.addAll(fetchedData);
         sortedDataList = List.from(eczaneList);
-        _initializeMarkersAndCamera();
+        _initializeCamera();
         _updateUserLocationAndSort();
         isLoading = false;
       });
@@ -83,11 +83,16 @@ class _EczaneScreenState extends State<EczaneScreen> {
 
   Future<void> _requestLocationPermission() async {
     isGetiingLocation = true;
-    setState(() {});
+    if (mounted) setState(() {});
+
     final status = await Permission.location.request();
+
+    if (!mounted) return; // widget hâlâ aktif mi?
+
     if (status.isGranted) {
       await _updateUserLocationAndSort();
     } else if (status.isDenied || status.isPermanentlyDenied) {
+      if (!mounted) return; // yine kontrol
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -97,14 +102,16 @@ class _EczaneScreenState extends State<EczaneScreen> {
           ),
         ),
       );
+
       if (_initialCameraPosition != null && mapController != null) {
         mapController!.animateCamera(
           CameraUpdate.newLatLngZoom(_initialCameraPosition!, 5),
         );
       }
     }
+
     isGetiingLocation = false;
-    setState(() {});
+    if (mounted) setState(() {});
   }
 
   Future<void> _updateUserLocationAndSort() async {
@@ -228,7 +235,7 @@ class _EczaneScreenState extends State<EczaneScreen> {
     setState(() {});
   }
 
-  void _initializeMarkersAndCamera() {
+  void _initializeCamera() {
     double sumLat = 0;
     double sumLng = 0;
     int validCount = 0;
@@ -335,8 +342,6 @@ class _EczaneScreenState extends State<EczaneScreen> {
             builder: (context, height, child) => AnimatedContainer(
               duration: const Duration(milliseconds: 100),
               curve: Curves.easeInOut,
-              /*   duration: const Duration(milliseconds: 100),
-              curve: Curves.easeInOut, */
               height: height,
               width: double.infinity,
               child: child, // child zaten tek seferlik oluşturulan map widget
@@ -440,9 +445,9 @@ class _EczaneScreenState extends State<EczaneScreen> {
                 );
           },
           child: Container(
-            margin: EdgeInsets.all(3),
+            margin: EdgeInsets.symmetric(vertical: 3, horizontal: 100),
             height: 5,
-            width: 40,
+            width: 60,
             decoration: BoxDecoration(
               color: Colors.grey,
               borderRadius: BorderRadius.circular(20),
@@ -537,7 +542,7 @@ class _GoogleMapWidget extends StatelessWidget {
     onMapCreated: onMapCreated,
     initialCameraPosition: CameraPosition(
       target: initialCameraPosition ?? const LatLng(39.0, 35.0),
-      zoom: 4,
+      zoom: 12,
     ),
     markers: markers,
     myLocationEnabled: true,

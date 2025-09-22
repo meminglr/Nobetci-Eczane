@@ -37,17 +37,17 @@ class YeniEczane {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['name'] = this.name;
-    data['city'] = this.city;
-    data['district'] = this.district;
-    data['address'] = this.address;
-    data['phone'] = this.phone;
-    data['hours'] = this.hours;
-    data['closing_info'] = this.closingInfo;
-    data['direction_link'] = this.directionLink;
-    data['latitude'] = this.latitude;
-    data['longitude'] = this.longitude;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['name'] = name;
+    data['city'] = city;
+    data['district'] = district;
+    data['address'] = address;
+    data['phone'] = phone;
+    data['hours'] = hours;
+    data['closing_info'] = closingInfo;
+    data['direction_link'] = directionLink;
+    data['latitude'] = latitude;
+    data['longitude'] = longitude;
     return data;
   }
 }

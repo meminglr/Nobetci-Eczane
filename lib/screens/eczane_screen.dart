@@ -335,6 +335,8 @@ class _EczaneScreenState extends State<EczaneScreen> {
             builder: (context, height, child) => AnimatedContainer(
               duration: const Duration(milliseconds: 100),
               curve: Curves.easeInOut,
+              /*   duration: const Duration(milliseconds: 100),
+              curve: Curves.easeInOut, */
               height: height,
               width: double.infinity,
               child: child, // child zaten tek seferlik oluşturulan map widget

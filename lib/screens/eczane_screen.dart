@@ -45,6 +45,7 @@ class _EczaneScreenState extends State<EczaneScreen> {
   final ValueNotifier<double> _fabOffsetNotifier = ValueNotifier<double>(0.0);
   double _lastScrollOffset = 0.0;
   BitmapDescriptor? customIcon;
+  bool isMapFullHeight = false;
 
   Future<void> fetchData() async {
     if (widget.controller.secilenSehir != null &&
@@ -147,21 +148,32 @@ class _EczaneScreenState extends State<EczaneScreen> {
       final newMarkers = <Marker>{};
       final LatLngBounds bounds = await _calculateBounds(position);
 
-      for (final eczane in sortedDataList) {
+      for (int i = 0; i < sortedDataList.length; i++) {
+        final eczane = sortedDataList[i];
         final lat = eczane.latitude;
         final lng = eczane.longitude;
         if (lat != null && lng != null) {
+          final markerPosition = LatLng(lat, lng);
           newMarkers.add(
             Marker(
               markerId: MarkerId(
                 eczane.name ?? 'Eczane_${Random().nextInt(1000)}',
               ),
               icon: customIcon ?? BitmapDescriptor.defaultMarker,
-              position: LatLng(lat, lng),
-              infoWindow: InfoWindow(
-                title: eczane.name,
-                snippet: eczane.address,
-              ),
+              position: markerPosition,
+              infoWindow: InfoWindow.noText,
+              onTap: () {
+                customInfoWindowController.addInfoWindow!(
+                  _EczaneListItem(
+                    item: eczane,
+                    eczaneService: widget.eczaneService,
+                    userPosition: _userPosition,
+                    isCompact: true,
+                    isNearest: i == 0,
+                  ),
+                  markerPosition,
+                );
+              },
             ),
           );
         }
@@ -271,6 +283,7 @@ class _EczaneScreenState extends State<EczaneScreen> {
       item: sortedDataList[index],
       eczaneService: widget.eczaneService,
       userPosition: _userPosition,
+      isNearest: index == 0,
     ),
   );
 
@@ -336,10 +349,25 @@ class _EczaneScreenState extends State<EczaneScreen> {
                     initialCameraPosition: _initialCameraPosition,
                     onMapCreated: (controller) {
                       mapController = controller;
+                      customInfoWindowController.googleMapController =
+                          controller;
                       _requestLocationPermission();
+                    },
+                    onTap: (position) {
+                      customInfoWindowController.hideInfoWindow!();
+                    },
+                    onCameraMove: (position) {
+                      customInfoWindowController.onCameraMove!();
                     },
                   ),
 
+                  CustomInfoWindow(
+                    height: 100,
+                    width: 300,
+                    offset: 50,
+
+                    controller: customInfoWindowController,
+                  ),
                   Positioned(
                     top: 5,
                     right: 5,
@@ -360,12 +388,6 @@ class _EczaneScreenState extends State<EczaneScreen> {
                     right: 5,
                     child: Column(
                       children: [
-                        CustomInfoWindow(
-                          controller: customInfoWindowController,
-                          height: 200,
-                          width: 200,
-                          offset: 50,
-                        ),
                         FloatingActionButton.small(
                           heroTag: "zoomIn",
                           onPressed: _zoomIn,
@@ -379,6 +401,25 @@ class _EczaneScreenState extends State<EczaneScreen> {
                           child: const Icon(Icons.remove, color: Colors.black),
                         ),
                       ],
+                    ),
+                  ),
+                  Positioned(
+                    left: 5,
+                    top: 5,
+                    child: FloatingActionButton.small(
+                      onPressed: () {
+                        isMapFullHeight = !isMapFullHeight;
+                        setState(() {});
+                        if (isMapFullHeight) {
+                          _mapHeightNotifier.value = _minHeight;
+                        } else {
+                          _mapHeightNotifier.value = _maxHeightByDrag;
+                        }
+                      },
+                      backgroundColor: Colors.white,
+                      child: isMapFullHeight
+                          ? Icon(Icons.arrow_downward, color: Colors.black)
+                          : Icon(Icons.arrow_upward, color: Colors.black),
                     ),
                   ),
                 ],
@@ -397,6 +438,7 @@ class _EczaneScreenState extends State<EczaneScreen> {
                 );
           },
           child: Container(
+            margin: EdgeInsets.all(3),
             height: 5,
             width: 40,
             decoration: BoxDecoration(
@@ -471,15 +513,21 @@ class _EczaneScreenState extends State<EczaneScreen> {
   );
 }
 
+// Removed redundant custom info window widget in favor of reusing _EczaneListItem
+
 class _GoogleMapWidget extends StatelessWidget {
   final Set<Marker> markers;
   final LatLng? initialCameraPosition;
   final ValueChanged<GoogleMapController> onMapCreated;
+  final ValueChanged<LatLng>? onTap;
+  final ValueChanged<CameraPosition>? onCameraMove;
 
   const _GoogleMapWidget({
     required this.markers,
     required this.initialCameraPosition,
     required this.onMapCreated,
+    this.onTap,
+    this.onCameraMove,
   });
 
   @override
@@ -499,6 +547,8 @@ class _GoogleMapWidget extends StatelessWidget {
     indoorViewEnabled: false,
     scrollGesturesEnabled: true,
     zoomGesturesEnabled: true,
+    onTap: onTap,
+    onCameraMove: onCameraMove,
   );
 }
 
@@ -506,11 +556,15 @@ class _EczaneListItem extends StatelessWidget {
   final YeniEczane item;
   final YeniEczaneService eczaneService;
   final Position? userPosition;
+  final bool isCompact;
+  final bool isNearest;
 
   const _EczaneListItem({
     required this.item,
     required this.eczaneService,
     this.userPosition,
+    this.isCompact = false,
+    this.isNearest = false,
   });
 
   static const BoxDecoration _mapDecoration = BoxDecoration(
@@ -539,7 +593,9 @@ class _EczaneListItem extends StatelessWidget {
     color: Colors.blue[100],
   );
   static final Text _mapText = Text(
-    "Harita",
+    "Yol Tarifi",
+    maxLines: 1,
+
     style: TextStyle(color: Colors.blue[100]),
   );
   static final Icon _callIcon = Icon(
@@ -567,94 +623,264 @@ class _EczaneListItem extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.all(8),
-    child: ConstrainedBox(
-      constraints: const BoxConstraints(minHeight: 100),
-      child: IntrinsicHeight(
-        child: Row(
-          children: [
-            Expanded(
-              flex: 1,
-              child: GestureDetector(
-                onTap: item.latitude != null && item.longitude != null
-                    ? () =>
-                          eczaneService.openMap(item.latitude!, item.longitude!)
-                    : null,
-                child: Container(
-                  decoration: _mapDecoration,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      _mapIcon,
-                      _mapText,
-                      Container(
-                        decoration: BoxDecoration(
-                          color: Colors.blue[300],
-                          borderRadius: BorderRadius.all(Radius.circular(8)),
+  Widget build(BuildContext context) => isCompact
+      ? _buildCompact(context)
+      : Padding(
+          padding: const EdgeInsets.all(8),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: 100),
+            child: IntrinsicHeight(
+              child: Row(
+                children: [
+                  Expanded(
+                    flex: 1,
+                    child: GestureDetector(
+                      onTap: item.latitude != null && item.longitude != null
+                          ? () => eczaneService.openMap(
+                              item.latitude!,
+                              item.longitude!,
+                            )
+                          : null,
+                      child: Container(
+                        decoration: _mapDecoration,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            _mapIcon,
+                            _mapText,
+                            Container(
+                              decoration: BoxDecoration(
+                                color: Colors.blue[300],
+                                borderRadius: BorderRadius.all(
+                                  Radius.circular(8),
+                                ),
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 6,
+                                  vertical: 2,
+                                ),
+                                child: Text(
+                                  _getDistanceText(),
+                                  style: TextStyle(
+                                    color: Colors.blue[100],
+                                    fontSize: 10,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                        child: Padding(
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    flex: 3,
+                    child: Container(
+                      decoration: _infoDecoration,
+                      child: Padding(
+                        padding: const EdgeInsets.all(8),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    item.name ?? 'Bilinmeyen Eczane',
+                                    style: const TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Text(
+                              item.address ?? 'Adres Yok',
+                              style: const TextStyle(fontSize: 10),
+                            ),
+                            SizedBox(height: 5),
+                            if (isNearest)
+                              Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.red[50],
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(
+                                    color: Colors.redAccent,
+                                    width: 0.8,
+                                  ),
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 3,
+                                ),
+                                child: const Text(
+                                  'En Yakın',
+                                  style: TextStyle(
+                                    color: Colors.red,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    flex: 1,
+                    child: GestureDetector(
+                      onTap: item.phone != null
+                          ? () => eczaneService.makePhoneCall(item.phone!)
+                          : null,
+                      child: Container(
+                        decoration: _callDecoration,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [_callIcon, _callText],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+}
+
+extension on _EczaneListItem {
+  Widget _buildCompact(BuildContext context) => Material(
+    elevation: 5,
+    borderRadius: BorderRadius.all(Radius.circular(12)),
+    color: Colors.white,
+    child: Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            flex: 5,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  item.name ?? 'Eczane',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+
+                Text(
+                  item.address ?? 'Adres yok',
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(fontSize: 11, color: Colors.black87),
+                ),
+
+                Row(
+                  spacing: 4,
+                  children: [
+                    if (isNearest)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 2.0, bottom: 4.0),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.red[50],
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: Colors.redAccent,
+                              width: 0.6,
+                            ),
+                          ),
                           padding: const EdgeInsets.symmetric(
                             horizontal: 6,
                             vertical: 2,
                           ),
-                          child: Text(
-                            _getDistanceText(),
+                          child: const Text(
+                            'En Yakın',
                             style: TextStyle(
-                              color: Colors.blue[100],
+                              color: Colors.red,
                               fontSize: 10,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
                         ),
                       ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            Expanded(
-              flex: 3,
-              child: Container(
-                decoration: _infoDecoration,
-                child: Padding(
-                  padding: const EdgeInsets.all(8),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        item.name ?? 'Bilinmeyen Eczane',
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
+
+                    Padding(
+                      padding: const EdgeInsets.only(top: 2.0, bottom: 4.0),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.blue[50],
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: Colors.blueAccent,
+                            width: 0.6,
+                          ),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
+                        child: Text(
+                          _getDistanceText(),
+                          style: TextStyle(
+                            color: Colors.blue,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
-                      Text(
-                        item.address ?? 'Adres Yok',
-                        style: const TextStyle(fontSize: 10),
-                      ),
-                    ],
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            flex: 1,
+            child: Column(
+              spacing: 4,
+              children: [
+                Expanded(
+                  child: IconButton(
+                    onPressed: item.latitude != null && item.longitude != null
+                        ? () => eczaneService.openMap(
+                            item.latitude!,
+                            item.longitude!,
+                          )
+                        : null,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue,
+                      foregroundColor: Colors.blue[100],
+                    ),
+                    icon: const Icon(Icons.directions_outlined),
                   ),
                 ),
-              ),
-            ),
-            Expanded(
-              flex: 1,
-              child: GestureDetector(
-                onTap: item.phone != null
-                    ? () => eczaneService.makePhoneCall(item.phone!)
-                    : null,
-                child: Container(
-                  decoration: _callDecoration,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [_callIcon, _callText],
+                Expanded(
+                  child: IconButton(
+                    onPressed: item.phone != null
+                        ? () => eczaneService.makePhoneCall(item.phone!)
+                        : null,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                      foregroundColor: Colors.green[100],
+                    ),
+                    icon: const Icon(Icons.call_outlined),
                   ),
                 ),
-              ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     ),
   );

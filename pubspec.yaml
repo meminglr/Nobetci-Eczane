@@ -46,6 +46,7 @@ dependencies:
   flutter_native_splash: ^2.4.6
   flutter_launcher_icons: ^0.14.4
   custom_info_window: ^1.0.1
+  geocoding: ^4.0.0
 
 dev_dependencies:
   flutter_test:

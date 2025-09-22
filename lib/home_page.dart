@@ -36,7 +36,11 @@ class _HomePageState extends State<HomePage> {
 
         // Eğer ilk sayfa ise:
         if (isFirst) {
-          return FirstScreen(companents: companents, controller: controller);
+          return FirstScreen(
+            companents: companents,
+            controller: controller,
+            yeniEczaneService: yeniEczaneService,
+          );
         } else {
           return EczaneScreen(
             controller: controller,

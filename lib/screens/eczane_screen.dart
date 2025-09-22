@@ -47,6 +47,14 @@ class _EczaneScreenState extends State<EczaneScreen> {
   BitmapDescriptor? customIcon;
   bool isMapFullHeight = false;
 
+  @override
+  void initState() {
+    super.initState();
+    _loadCustomMarker();
+    fetchData();
+    _scrollController.addListener(_onScroll);
+  }
+
   Future<void> fetchData() async {
     if (widget.controller.secilenSehir != null &&
         widget.controller.secilenIlce != null) {
@@ -63,14 +71,6 @@ class _EczaneScreenState extends State<EczaneScreen> {
         isLoading = false;
       });
     }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _loadCustomMarker();
-    fetchData();
-    _scrollController.addListener(_onScroll);
   }
 
   void _zoomIn() async {
@@ -129,7 +129,7 @@ class _EczaneScreenState extends State<EczaneScreen> {
       }
 
       final position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
+        locationSettings: LocationSettings(accuracy: LocationAccuracy.high),
       );
       _userPosition = position;
 

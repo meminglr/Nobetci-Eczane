@@ -1,9 +1,7 @@
 import 'dart:convert';
 import 'package:drop_down_list/model/selected_list_item.dart';
 import 'package:flutter/services.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:myapp/model/eczane_model.dart';
 import 'package:myapp/model/sehir_model.dart';
 
 class HomeController {

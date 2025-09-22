@@ -43,6 +43,9 @@ dependencies:
   permission_handler: ^12.0.1
   nobetci_eczaneler: ^0.0.3
   expressive_loading_indicator: ^0.0.1
+  flutter_native_splash: ^2.4.6
+  flutter_launcher_icons: ^0.14.4
+  custom_info_window: ^1.0.1
 
 dev_dependencies:
   flutter_test:
@@ -60,7 +63,25 @@ dev_dependencies:
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 
-# The following section is specific to Flutter packages.
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/icon/app_icon.png"
+  adaptive_icon_background: "#f44336"
+  adaptive_icon_foreground: "assets/icon/app_foreground.png"
+  
+flutter_native_splash:
+  color: "#F44336"
+  android: true
+  ios: true
+  web: false
+  android_gravity: center
+  ios_content_mode: scaleAspectFill
+  android_12:
+    color: "#F44336"
+    image: assets/icon/app_foreground.png
+    icon_background_color: "#F44336"
+
 flutter:
 
   # The following line ensures that the Material Icons font is
@@ -71,6 +92,8 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - json/il-ilce.json
+    - assets/icons/marker.png
+    
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

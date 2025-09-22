@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'package:custom_info_window/custom_info_window.dart';
 import 'package:expressive_loading_indicator/expressive_loading_indicator.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -34,32 +35,39 @@ class _EczaneScreenState extends State<EczaneScreen> {
   Set<Marker> markers = const {};
   final ValueNotifier<double> _mapHeightNotifier = ValueNotifier<double>(300);
   late final ScrollController _scrollController = ScrollController();
+  CustomInfoWindowController customInfoWindowController =
+      CustomInfoWindowController();
   final double _minHeight = 170;
-  final double _maxHeight = 300;
+  final double _maxHeightByListScrool = 300;
+  double get _maxHeightByDrag => MediaQuery.of(context).size.height * 0.6;
   LatLng? _initialCameraPosition;
   Position? _userPosition;
   final ValueNotifier<double> _fabOffsetNotifier = ValueNotifier<double>(0.0);
   double _lastScrollOffset = 0.0;
+  BitmapDescriptor? customIcon;
 
   Future<void> fetchData() async {
-    final fetchedData = await widget.eczaneService.getEczane(
-      widget.controller.normalizeToEnglish(widget.controller.secilenSehir!),
-      widget.controller.normalizeToEnglish(widget.controller.secilenIlce!),
-    );
-
-    setState(() {
-      eczaneList.clear();
-      eczaneList.addAll(fetchedData);
-      sortedDataList = List.from(eczaneList);
-      _initializeMarkersAndCamera();
-      _updateUserLocationAndSort();
-      isLoading = false;
-    });
+    if (widget.controller.secilenSehir != null &&
+        widget.controller.secilenIlce != null) {
+      final fetchedData = await widget.eczaneService.getEczane(
+        widget.controller.normalizeToEnglish(widget.controller.secilenSehir!),
+        widget.controller.normalizeToEnglish(widget.controller.secilenIlce!),
+      );
+      setState(() {
+        eczaneList.clear();
+        eczaneList.addAll(fetchedData);
+        sortedDataList = List.from(eczaneList);
+        _initializeMarkersAndCamera();
+        _updateUserLocationAndSort();
+        isLoading = false;
+      });
+    }
   }
 
   @override
   void initState() {
     super.initState();
+    _loadCustomMarker();
     fetchData();
     _scrollController.addListener(_onScroll);
   }
@@ -90,7 +98,7 @@ class _EczaneScreenState extends State<EczaneScreen> {
       );
       if (_initialCameraPosition != null && mapController != null) {
         mapController!.animateCamera(
-          CameraUpdate.newLatLngZoom(_initialCameraPosition!, 10),
+          CameraUpdate.newLatLngZoom(_initialCameraPosition!, 5),
         );
       }
     }
@@ -148,6 +156,7 @@ class _EczaneScreenState extends State<EczaneScreen> {
               markerId: MarkerId(
                 eczane.name ?? 'Eczane_${Random().nextInt(1000)}',
               ),
+              icon: customIcon ?? BitmapDescriptor.defaultMarker,
               position: LatLng(lat, lng),
               infoWindow: InfoWindow(
                 title: eczane.name,
@@ -199,8 +208,15 @@ class _EczaneScreenState extends State<EczaneScreen> {
     );
   }
 
+  Future<void> _loadCustomMarker() async {
+    customIcon = await BitmapDescriptor.asset(
+      const ImageConfiguration(size: Size(48, 48)),
+      "assets/icons/marker.png",
+    );
+    setState(() {});
+  }
+
   void _initializeMarkersAndCamera() {
-    final newMarkers = <Marker>{};
     double sumLat = 0;
     double sumLng = 0;
     int validCount = 0;
@@ -209,15 +225,6 @@ class _EczaneScreenState extends State<EczaneScreen> {
       final lat = eczane.latitude;
       final lng = eczane.longitude;
       if (lat != null && lng != null) {
-        newMarkers.add(
-          Marker(
-            markerId: MarkerId(
-              eczane.name ?? 'Eczane_${Random().nextInt(1000)}',
-            ),
-            position: LatLng(lat, lng),
-            infoWindow: InfoWindow(title: eczane.name, snippet: eczane.address),
-          ),
-        );
         sumLat += lat;
         sumLng += lng;
         validCount++;
@@ -227,13 +234,14 @@ class _EczaneScreenState extends State<EczaneScreen> {
     _initialCameraPosition = validCount > 0
         ? LatLng(sumLat / validCount, sumLng / validCount)
         : const LatLng(39.0, 35.0);
-
-    setState(() => markers = newMarkers);
   }
 
   void _onScroll() {
-    _mapHeightNotifier.value = (_maxHeight - _scrollController.position.pixels)
-        .clamp(_minHeight, _maxHeight);
+    _mapHeightNotifier.value =
+        (_maxHeightByListScrool - _scrollController.offset).clamp(
+          _minHeight,
+          _maxHeightByListScrool,
+        );
 
     final currentOffset = _scrollController.offset;
     if (currentOffset > _lastScrollOffset && currentOffset > 0) {
@@ -250,6 +258,7 @@ class _EczaneScreenState extends State<EczaneScreen> {
     _mapHeightNotifier.dispose();
     _fabOffsetNotifier.dispose();
     mapController?.dispose();
+    customInfoWindowController.dispose();
     super.dispose();
   }
 
@@ -351,6 +360,12 @@ class _EczaneScreenState extends State<EczaneScreen> {
                     right: 5,
                     child: Column(
                       children: [
+                        CustomInfoWindow(
+                          controller: customInfoWindowController,
+                          height: 200,
+                          width: 200,
+                          offset: 50,
+                        ),
                         FloatingActionButton.small(
                           heroTag: "zoomIn",
                           onPressed: _zoomIn,
@@ -378,12 +393,64 @@ class _EczaneScreenState extends State<EczaneScreen> {
             _mapHeightNotifier.value =
                 (_mapHeightNotifier.value + details.delta.dy).clamp(
                   _minHeight,
-                  _maxHeight,
+                  _maxHeightByDrag,
                 );
           },
-          child: SizedBox(child: const Center(child: Icon(Icons.drag_handle))),
+          child: Container(
+            height: 5,
+            width: 40,
+            decoration: BoxDecoration(
+              color: Colors.grey,
+              borderRadius: BorderRadius.circular(20),
+            ),
+          ),
         ),
-        Expanded(
+        if (widget.controller.secilenSehir == null)
+          Text(
+            "İl Bilgisi Girin",
+            style: TextStyle(
+              color: Colors.red,
+              fontWeight: FontWeight.w700,
+              fontSize: 30,
+            ),
+          )
+        else if (widget.controller.secilenIlce == null)
+          Expanded(
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.location_on_outlined, color: Colors.red, size: 50),
+                  Text(
+                    "İlçe Bilgisi Girin",
+                    style: TextStyle(
+                      color: Colors.red,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 30,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          )
+        else if (isLoading)
+          Expanded(
+            child: Center(
+              child: SizedBox(
+                height: 100,
+                width: 100,
+                child: ExpressiveLoadingIndicator(
+                  color: Colors.red,
+                  // Accessibility
+                  semanticsLabel: 'Loading',
+                  semanticsValue: 'In progress',
+                ),
+              ),
+            ),
+          )
+        else
+          Expanded(child: _eczaneListView()),
+        /*  Expanded(
           child: isLoading
               ? Center(
                   child: SizedBox(
@@ -398,7 +465,7 @@ class _EczaneScreenState extends State<EczaneScreen> {
                   ),
                 )
               : _eczaneListView(),
-        ),
+        ),*/
       ],
     ),
   );
@@ -423,7 +490,6 @@ class _GoogleMapWidget extends StatelessWidget {
       zoom: 4,
     ),
     markers: markers,
-
     myLocationEnabled: true,
     zoomControlsEnabled: false,
     myLocationButtonEnabled: false,

@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 import 'package:myapp/constants/api_constants.dart';
-import 'package:myapp/model/eczane_model.dart';
 import 'package:myapp/model/yeni_eczane_model.dart';
 import 'package:url_launcher/url_launcher.dart';
 

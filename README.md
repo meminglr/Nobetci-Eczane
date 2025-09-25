@@ -12,17 +12,12 @@ Türkiye genelinde nöbetçi eczaneleri kolayca bulmanızı sağlayan modern ve 
 - **Yol Tarifi**: Harita uygulaması ile navigasyon desteği
 - **Gerçek Zamanlı Veri**: Güncel nöbetçi eczane bilgileri
 
-📱 Ekran Görüntüleri
+## 📱 Ekran Görüntüleri
 <div align="center">
-Ana Ekran ve Lokasyon Seçimi
 <img src="screenshots/02_location_selection.png" width="250" alt="Lokasyon Seçimi">
-Şehir ve İlçe Seçimi
 <img src="screenshots/03_city_selection.png" width="250" alt="Şehir Seçimi">
-<img src="screenshots/04_district_selection.png" width="250" alt="İlçe Seçimi">
-Harita Görünümü ve Eczane Listesi
 <img src="screenshots/05_map_view.png" width="250" alt="Harita Görünümü">
 <img src="screenshots/06_pharmacy_list.png" width="250" alt="Eczane Listesi">
-Eczane Detayları ve İletişim
 <img src="screenshots/07_pharmacy_details.png" width="250" alt="Eczane Detayları">
 </div>
 

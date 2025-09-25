@@ -40,9 +40,9 @@ Uygulamanın son sürümünü indirmek için:
 
 ## 📞 İletişim
 
-- **Geliştirici**: [Adınız]
-- **E-posta**: [email@example.com]
-- **LinkedIn**: [linkedin.com/in/profiliniz]
+- **Geliştirici**: [Mehmet Emin Güler]
+- **E-posta**: [mhmt.eminguler@gmail.com]
+- **LinkedIn**: [linkedin.com/in/mehmet-emin-güler/]
 
 ## 🙏 Teşekkürler
 

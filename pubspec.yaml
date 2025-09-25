@@ -1,5 +1,5 @@
-name: myapp
-description: "A new Flutter project."
+name: nobetcieczane
+description: "nobetci_eczane"
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -47,6 +47,7 @@ dependencies:
   flutter_launcher_icons: ^0.14.4
   custom_info_window: ^1.0.1
   geocoding: ^4.0.0
+  package_rename: ^1.10.0
 
 dev_dependencies:
   flutter_test:
@@ -82,6 +83,18 @@ flutter_native_splash:
     color: "#F44336"
     image: assets/icon/app_foreground.png
     icon_background_color: "#F44336"
+
+package_rename_config:
+  android:
+    app_name: "Nöbetçi Eczane"
+    package_name: "com.eminsoft.nobetcieczane"
+    override_old_package: # (Optional) (String) Use this to delete the old folder structure of MainActivity or to use the existing code with the new package name
+    lang: # (Optional) (String) The android development language {kotlin(default) or java}
+
+  ios:
+    app_name: "Nöbetçi Eczane"
+    bundle_name: "nobetcieczane"
+    package_name: "emin.soft.nobetcieczane"
 
 flutter:
 

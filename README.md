@@ -42,7 +42,7 @@ Uygulamanın son sürümünü indirmek için:
 
 - **Geliştirici**: [Mehmet Emin Güler]
 - **E-posta**: [mhmt.eminguler@gmail.com]
-- **LinkedIn**: [linkedin.com/in/mehmet-emin-güler/]
+- **LinkedIn**: [https://linkedin.com/in/mehmet-emin-güler/]
 
 ## 🙏 Teşekkürler
 

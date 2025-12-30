@@ -61,18 +61,3 @@ Uygulamanın son sürümünü indirmek için:
 ---
 
 ⭐ Bu projeyi beğendiyseniz yıldız vermeyi unutmayın!
-
-## 🔄 Sürüm Geçmişi
-
-### v1.0.0 (2024)
-- ✅ İlk stabil sürüm
-- ✅ Temel eczane arama özelliği
-- ✅ Harita entegrasyonu
-- ✅ Konum tabanlı arama
-- ✅ Şehir/ilçe filtreleme
-
-### Gelecek Sürümler
-- 🔄 Push notification desteği
-- 🔄 Favori eczaneler
-- 🔄 Çevrimdışı mod
-- 🔄 Kullanıcı yorumları ve değerlendirmeleri

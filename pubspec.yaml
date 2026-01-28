@@ -48,6 +48,7 @@ dependencies:
   custom_info_window: ^1.0.1
   geocoding: ^4.0.0
   package_rename: ^1.10.0
+  shared_preferences: ^2.5.4
 
 dev_dependencies:
   flutter_test:
